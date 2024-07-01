@@ -39,40 +39,19 @@ public class ReviewDAO {
         DataSource ds = (DataSource) ctx.lookup("java:comp/env/jdbc/oracle");
         return ds.getConnection();
     }
+
     /** 
      * @Method Name  : getMostLikedReview
-     * @date : 2024. 6. 21. 
+     * @date : 2024. 6. 24. 
      * @author : JJH
-     * @param gameSeq
-     * @return ReviewDTO
-     */
-//    public ReviewDTO getMostLikedReview(int gameSeq) throws Exception {
-//        String sql = "select * from (select * from review where game_seq = ? order by (review_like + review_dislike) desc) where rownum = 1";
-//        try (Connection con = this.getConnection(); PreparedStatement pstat = con.prepareStatement(sql)) {
-//            pstat.setInt(1, gameSeq);
-//            try (ResultSet rs = pstat.executeQuery()) {
-//                if (rs.next()) {
-//                    return new ReviewDTO(
-//                        rs.getInt("review_seq"),
-//                        rs.getInt("game_seq"),
-//                        rs.getString("user_id"),
-//                        rs.getString("review_content"),
-//                        rs.getInt("review_like"),
-//                        rs.getInt("review_dislike"),
-//                        rs.getTimestamp("review_date")
-//                    );
-//                }
-//            }
-//        }
-//        return null;
-//    }
-    
-    public HashMap<String, ?> getMostLikedReview(int gameSeq) throws Exception {
+     * @param reviewSeq
+     * @return HashMap<String, ?>
+     */    
+    public HashMap<String, Object> getMostLikedReview(int gameSeq) throws Exception {
         String sql = "select * from (select rownum as rnum, r.*, m.user_nickname, nvl(pi.profile_img_sysname, 'default.png') as profile_url from review r join member m on r.user_id = m.user_id left join user_profile_img pi on r.user_id = pi.user_id where game_seq = ? order by (review_dislike + review_like) desc)";
         try (Connection con = this.getConnection(); PreparedStatement pstat = con.prepareStatement(sql)) {
             pstat.setInt(1, gameSeq);
-            try (ResultSet rs = pstat.executeQuery()) {
- 
+            try (ResultSet rs = pstat.executeQuery()) { 
                 if (rs.next()) {
                 	 HashMap map = new HashMap<>();
                      map.put("reviewSeq", rs.getInt("review_seq"));
@@ -191,14 +170,14 @@ public class ReviewDAO {
      * @param endNum
      * @return ArrayList<HashMap<String, ?>>
      */
-    public ArrayList<HashMap<String, ?>> getReviewsByGameSeq(int gameSeq, String sortType, int startNum, int endNum) throws Exception {
+    public ArrayList<HashMap<String, Object>> getReviewsByGameSeq(int gameSeq, String sortType, int startNum, int endNum) throws Exception {
     	String sql = "select * from (select rownum as rnum, r.*, m.user_nickname, nvl(pi.profile_img_sysname, 'default.png') as profile_url from review r join member m on r.user_id = m.user_id left join user_profile_img pi on r.user_id = pi.user_id where game_seq = ? order by " + sortType + " desc) where rnum <= ? and rnum >= ?";
         try (Connection con = this.getConnection(); PreparedStatement pstat = con.prepareStatement(sql)) {
             pstat.setInt(1, gameSeq);
             pstat.setInt(2, endNum);
             pstat.setInt(3, startNum);
             try (ResultSet rs = pstat.executeQuery()) {
-                ArrayList<HashMap<String, ?>> list = new ArrayList<>();
+                ArrayList<HashMap<String, Object>> list = new ArrayList<>();
                 while (rs.next()) {
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("reviewSeq", rs.getInt("review_seq"));
@@ -260,13 +239,13 @@ public class ReviewDAO {
      * @param endNum
      * @return ArrayList<HashMap<String, ?>>
      */
-    public ArrayList<HashMap<String, ?>> getAllReviews(String sortType, int startNum, int endNum) throws Exception {
+    public ArrayList<HashMap<String, Object>> getAllReviews(String sortType, int startNum, int endNum) throws Exception {
     	String sql = "select * from (select rownum as rnum, r.*, m.user_nickname, nvl(pi.profile_img_sysname, 'default.png') as profile_url from review r join member m on r.user_id = m.user_id left join user_profile_img pi on r.user_id = pi.user_id order by " + sortType + " desc) where rnum <= ? and rnum >= ?";
         try (Connection con = this.getConnection(); PreparedStatement pstat = con.prepareStatement(sql)) {
             pstat.setInt(1, endNum);
             pstat.setInt(2, startNum);
             try (ResultSet rs = pstat.executeQuery()) {
-                ArrayList<HashMap<String, ?>> list = new ArrayList<>();
+                ArrayList<HashMap<String, Object>> list = new ArrayList<>();
                 while (rs.next()) {
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("reviewSeq", rs.getInt("review_seq"));
@@ -300,7 +279,14 @@ public class ReviewDAO {
         }
         return 0;
     }
-
+    
+    /** 
+     * @Method Name  : deleteReview
+     * @date : 2024. 6. 24. 
+     * @author : JJH
+     * @param reviewSeq
+     * @return 
+     */ 
     public void deleteReview(int reviewSeq) throws Exception {
         String sql = "delete from review where review_seq = ?";
         try (Connection con = this.getConnection(); PreparedStatement pstat = con.prepareStatement(sql)) {
@@ -309,7 +295,13 @@ public class ReviewDAO {
         }
     }
     
-    
+    /** 
+     * @Method Name  : getReviewBySeq
+     * @date : 2024. 6. 24. 
+     * @author : JJH
+     * @param reviewSeq
+     * @return ReviewDTO
+     */    
     public ReviewDTO getReviewBySeq(int reviewSeq) throws Exception {
         String sql = "select * from review where review_seq = ?";
         try (Connection con = this.getConnection(); PreparedStatement pstat = con.prepareStatement(sql)) {
@@ -331,12 +323,88 @@ public class ReviewDAO {
         return null;
     }
 
+    /** 
+     * @Method Name  : updateReview
+     * @date : 2024. 6. 24. 
+     * @author : JJH
+     * @param review
+     * @return ReviewDTO
+     */ 
     public void updateReview(ReviewDTO review) throws Exception {
         String sql = "update review set review_content = ? where review_seq = ?";
         try (Connection con = this.getConnection(); PreparedStatement pstat = con.prepareStatement(sql)) {
             pstat.setString(1, review.getReviewContent());
             pstat.setInt(2, review.getReviewSeq());
             pstat.executeUpdate();
+        }
+    }
+    
+    /** 
+     * @Method Name  : getUserLikeDislikeStatus
+     * @date : 2024. 6. 30. 
+     * @author : JJH
+     * @param sortType
+     * @param startNum
+     * @param endNum
+     * @return ArrayList<HashMap<String, ?>>
+     */
+    
+    public String getUserLikeDislikeStatus(int reviewSeq, String userId) throws Exception{
+    	String sql = "select type from review_likes_dislikes where review_seq = ? and user_id = ?";
+    	try (Connection con = this.getConnection(); PreparedStatement pstat = con.prepareStatement(sql)) {
+    		pstat.setInt(1, reviewSeq);
+    		pstat.setString(2, userId);
+    	 try (ResultSet rs = pstat.executeQuery()) {
+    		if(rs.next()) {
+    			return rs.getString("type");
+    		}
+    		return null;
+    	}
+
+    }
+}
+    
+    
+    /** 
+     * @Method Name  : deleteReviewLikeDislike
+     * @date : 2024. 6. 30. 
+     * @author : JJH
+     * @param reviewSeq
+     * @param userId
+     * @param type
+     * @return
+     */
+    
+    public void deleteReviewLikeDislike(int reviewSeq, String userId, String type) throws Exception {
+        String deleteSql = "delete from review_likes_dislikes where review_seq = ? and user_id = ? and type = ?";
+        String updateSql = "";
+
+        if ("like".equals(type)) {
+            updateSql = "update review set review_like = review_like - 1 where review_seq = ?";
+        } else if ("dislike".equals(type)) {
+            updateSql = "update review set review_dislike = review_dislike - 1 where review_seq = ?";
+        }
+
+        try (Connection con = this.getConnection()) {
+            try (PreparedStatement deletePstat = con.prepareStatement(deleteSql);
+                 PreparedStatement updatePstat = con.prepareStatement(updateSql)) {
+                con.setAutoCommit(false);
+
+                // 리뷰 업데이트
+                updatePstat.setInt(1, reviewSeq);
+                updatePstat.executeUpdate();
+
+                // 좋아요/싫어요 기록 삭제
+                deletePstat.setInt(1, reviewSeq);
+                deletePstat.setString(2, userId);
+                deletePstat.setString(3, type);
+                deletePstat.executeUpdate();
+
+                con.commit();
+            } catch (SQLException e) {
+                con.rollback();
+                throw e;
+            }
         }
     }
 }
