@@ -180,6 +180,7 @@ nav {
 }
 
 #post-content {
+	word-wrap: break-word;
     height: 210px;
     overflow-y: auto;
 	font-size: 1.3rem;
@@ -348,6 +349,7 @@ nav {
 	display: flex;
 	align-items: left;
 	flex-direction: column;
+	word-wrap: break-word;
 }
 
 .replycontainer>.col3 {
