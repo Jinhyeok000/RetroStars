@@ -24,6 +24,10 @@
 	crossorigin="anonymous"></script>
 <!-- Fonts -->
 <link rel="stylesheet" href="https://webfontworld.github.io/daegu/DalseoHealing.css">
+			<!-- summernote editer -->
+			<script src="cboard/summernote/summernote-lite.js"></script>
+<script src="cboard/summernote/summernote-ko-KR.js"></script>
+<link rel="stylesheet" href="cboard/summernote/summernote-lite.css">
 
 <style>
 
@@ -90,13 +94,7 @@ nav {
       }
 
 
-      a {
-        text-decoration: none !important;
-     }
-     
-     a:link { color: white; text-decoration: none;}
-      a:visited { color: white; text-decoration: none;}
-     a:hover { color: white; text-decoration: underline;}
+  
       /*    end navbar css */
 
 
@@ -165,6 +163,7 @@ nav {
 }
 
 #post-title {
+	word-wrap: break-word;
 	font-size: 1.5rem;
 	margin: 0;
 	color: white;
@@ -172,7 +171,9 @@ nav {
 
 .post-body {
 	height: 250px;
-	padding: 1.5rem;
+	display: flex;
+    align-items: center;
+    justify-content: center;
 	background: #272727;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 	text-align: left;
@@ -182,10 +183,22 @@ nav {
 #post-content {
 	word-wrap: break-word;
     height: 210px;
+    width:980px;
     overflow-y: auto;
-	font-size: 1.3rem;
 	margin: 0;
 	color: #ffffff;
+}
+
+.dropdown-toggle::after { display: none; }
+				
+.note-editable {
+	border: 1px solid #d3d3d3;
+	color: white;
+	font-family : 'DalseoHealing';
+}
+				
+.note-dropdown-item:link, .note-dropdown-item:visited, .note-dropdown-item:hover{
+	color:black;
 }
 
 .btnsdiv {
@@ -344,8 +357,9 @@ nav {
 
 
 .replycontainer>.col2 {
+	overflow-y: auto;
 	padding-left: 30px;
-	min-height: 40px;
+	height: 70px;
 	display: flex;
 	align-items: left;
 	flex-direction: column;
@@ -485,7 +499,7 @@ nav {
 					<div id="post-title" contenteditable="false">${dto.qBoardTitle}</div>
 				</div>
 				<div class="post-body">
-					<div id="post-content" contenteditable="false">${dto.qBoardContent}</div>
+					<div id="post-content">${dto.qBoardContent}</div>
 				</div>
 				<c:choose>
 					    <c:when test="${file != null}">
@@ -553,6 +567,16 @@ nav {
 	    </div>
 </body>
 <script>
+
+
+		// 제목 입력 필드의 입력 길이 제한
+		$("#post-title").on("input", function () {
+		    var maxLength = 33;
+		    if ($(this).val().length > maxLength) {
+		        alert("제목은 최대 33글자까지 입력할 수 있습니다.");
+		        $(this).val($(this).val().substring(0, maxLength));
+		    }
+		});
 			
 			$("#selectBox").on("change",function(){
                      let form = $('<form>', {
@@ -793,9 +817,33 @@ nav {
                 deletebtn = $(this).next();
 
                 if (updatebtn.html() == "수정") {
-                    $("div[contenteditable]").attr("contenteditable", "true");
                     updatebtn.html("완료");
                     deletebtn.html("취소");
+                    
+                    $("#post-title").attr("contenteditable", "true");
+                    $(document).ready(function(){
+        				$('#post-content').summernote({
+        					width: '980px',
+        					height: '190px', // 에디터 높이
+        					disableResizeEditor: true, // 에디터 사이즈 조절 옵션 끄기
+        					focus: true, // 에디터 로딩후 포커스를 맞출지 여부
+        					lang: "ko-KR", // 한글 설정
+        					toolbar: [ // 툴바 설정
+        							['fontname', ['fontname']],
+        							['fontsize', ['fontsize']],
+        							['color', ['color']],
+        							['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
+        							['para', ['ul', 'ol', 'paragraph']],
+        							['height', ['height']]
+        						],
+        						fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
+        						fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','32','36','48','60']
+        				});
+        				$('#post-content').summernote('fontSize', '16'); // 기본 폰트 사이즈 설정
+                    });
+        	
+                	
+                    
 
 
                 } else if (updatebtn.html() == "완료") {
@@ -818,7 +866,7 @@ nav {
                     }), $('<input>', {
                         type: 'hidden',
                         name: 'content',
-                        value: $('#post-content').html().trim()
+                        value: $('.note-editable').html().trim()
                     })];
 
 
