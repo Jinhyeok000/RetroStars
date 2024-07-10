@@ -517,8 +517,6 @@ a {
 								href="/mypage.member"> <img src="/profile/${userProfileUrl}"
 									class="rounded-circle" width="40" height="40" alt="Profile">
 							</a></li>
-
-
 						</ul>
 					</c:when>
 					<c:otherwise>

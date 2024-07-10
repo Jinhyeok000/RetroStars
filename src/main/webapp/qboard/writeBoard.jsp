@@ -15,7 +15,10 @@
 				crossorigin="anonymous"></script>
 				<!-- Fonts -->
 <link rel="stylesheet" href="https://webfontworld.github.io/daegu/DalseoHealing.css">
-
+			<!-- summernote editer -->
+			<script src="cboard/summernote/summernote-lite.js"></script>
+<script src="cboard/summernote/summernote-ko-KR.js"></script>
+<link rel="stylesheet" href="cboard/summernote/summernote-lite.css">
 			<style>
 			
 			body{
@@ -73,13 +76,7 @@
       }
 
 
-      a {
-        text-decoration: none !important;
-     }
-     
-     a:link { color: white; text-decoration: none;}
-      a:visited { color: white; text-decoration: none;}
-     a:hover { color: white; text-decoration: underline;}
+    
       /*    end navbar css */
 					
 
@@ -180,26 +177,20 @@
 				}
 
 				#contents_detail {
-					overflow-y: auto;
-					color:white;
-					position: relative;
 					width: 880px;
 					height: 500px;
-					border: 2px solid gray;
 				}
-
-				#contents_detail::before {
-					/*비어있을 때*/
-					position: absolute;
-					content: "내용을 입력하세요.";
-					color: gray;
-					top: 50%;
-					left: 45%;
+		
+				.dropdown-toggle::after { display: none; }
+				
+				.note-editable {
+					border: 1px solid #d3d3d3;
+					color: white;
+					font-family : 'DalseoHealing';
 				}
-
-				#contents_detail:not(:empty)::before {
-					/*비어있지 않을 때*/
-					display: none;
+				
+				.note-dropdown-item:link, .note-dropdown-item:visited, .note-dropdown-item:hover{
+					color:black;
 				}
 
 				.btns_container {
@@ -294,7 +285,7 @@
 
 
 				
-			</style>
+	</style>
 		</head>
 		<body>
 		<!--  HEADER HTML -->
@@ -404,7 +395,7 @@
             </div>
         </div>
         <div class="contents_container center" style="flex: 5; width: 100%;">
-            <div id="contents_detail" contenteditable="true"></div>
+            <div id="summernote"></div>
         </div>  
        <form id="myForm" action="/insert.qboard" method="post" enctype="multipart/form-data">
             <input type="hidden" id="boardwriterNicname" name="boardWriterNicname">
@@ -441,6 +432,37 @@
     </div>
 				
 			<script>
+			
+			
+			$(document).ready(function(){
+				$('#summernote').summernote({
+					width: '890px',
+					height: '400px', // 에디터 높이
+					disableResizeEditor: true, // 에디터 사이즈 조절 옵션 끄기
+					focus: true, // 에디터 로딩후 포커스를 맞출지 여부
+					lang: "ko-KR", // 한글 설정
+					toolbar: [ // 툴바 설정
+							['fontname', ['fontname']],
+							['fontsize', ['fontsize']],
+							['color', ['color']],
+							['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
+							['para', ['ul', 'ol', 'paragraph']],
+							['height', ['height']]
+						],
+						fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
+						fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','32','36','48','60']
+				});
+				$('#summernote').summernote('fontSize', '16'); // 기본 폰트 사이즈 설정
+			});
+			
+			// 제목 입력 필드의 입력 길이 제한
+			$("#title_input").on("input", function () {
+			    var maxLength = 33;
+			    if ($(this).val().length > maxLength) {
+			        alert("제목은 최대 33글자까지 입력할 수 있습니다.");
+			        $(this).val($(this).val().substring(0, maxLength));
+			    }
+			});
 		
 			 $("#insert_btn").on("click", function () {
 				 event.preventDefault(); // 기본 제출 동작 막기
@@ -455,18 +477,12 @@
 					 return false;
 				 }
 				 
-				 if($("#contents_detail").html().trim()==""){
-					 alert("내용을 입력해주세요.");
-					 return false;
-				 }
-				 
-				console.log($("#contents_detail").html().trim());
 				 
 				 // 폼 데이터 설정
 			        document.getElementById("boardwriterNicname").value = $("#boardwriter_div").text();
 			        document.getElementById("qBoardCategory").value = $("#categoryToggle").text();
 			        document.getElementById("qBoardTitle").value = $("#title_input").val().trim();
-			        document.getElementById("qBoardContent").value = $("#contents_detail").html().trim();
+			        document.getElementById("qBoardContent").value = $(".note-editable").html().trim();
 			        document.getElementById("qBoardSecret").value = $('#secret').prop('checked');
 
 			        // 폼 제출
