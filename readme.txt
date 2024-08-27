@@ -1,4 +1,4 @@
-# K-Digital Academy First Project
+K-Degital Academy First-Project
 
 ## 게임 플랫폼 개발
 
