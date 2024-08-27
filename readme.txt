@@ -13,6 +13,7 @@ K-Degital Academy First-Project
   - FAQ 게시판
   - 랭킹 및 게임 관련 개발
 - 조진혁
+  - Git 관리자
   - 게임게시판
   - 리뷰게시판
   - 로그인 & 회원가입
